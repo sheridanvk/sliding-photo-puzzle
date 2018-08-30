@@ -43,6 +43,14 @@ function positionImages() {
   })
 }
 
-gameSetup()
-createTiles()
-positionImages()
+function deleteTile() {
+  //TODO: make this user-customisable
+  document.getElementById('container-15').remove()
+}
+
+window.onload = function() {
+  gameSetup()
+  createTiles()
+  positionImages()
+  deleteTile()
+}
