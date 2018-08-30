@@ -1,0 +1,38 @@
+/* styles */
+/* called by your view template */
+
+:root {
+  --game-width: 0vw;
+  --game-height: 0vw;
+  --img-url:'';
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#game-area {
+  display: grid;
+  grid-gap: 3px;
+  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+  
+  position: relative;
+  margin: auto;
+  
+  width: var(--game-width);
+  height: var(--game-height);
+}
+
+.tile {
+  background-image: var(--img-url);
+  background-size: auto var(--game-height);
+  height:100%;
+  width:100%;
+  background-position: inherit;
+}
+
+.tile-container {
+  border-radius: 5px;
+  overflow: hidden;
+}
