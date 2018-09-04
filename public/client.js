@@ -77,7 +77,7 @@ window.onload = function() {
   createTiles()
   tileSetup()
   drawGame()
-  //testValidMoves()
+  // testValidMoves()
 }
 
 // Game play
@@ -167,15 +167,15 @@ function getNullLoc() {
 }
 
 function testValidMoves() {
-  console.log(`checkValidMove(1, 0) is true: ${checkValidMove(1, 0) === true}`)
-  console.log(`checkValidMove(1, 5) is true: ${checkValidMove(1, 5) === true}`)
-  console.log(`checkValidMove(13, 5) is false: ${checkValidMove(13, 5) === false}`)
-  console.log(`checkValidMove(5, 1) is true: ${checkValidMove(5, 1) === true}`)
-  console.log(`checkValidMove(3, 4) is false: ${checkValidMove(3, 4) === false}`)
-  console.log(`checkValidMove(4, 5) is true: ${checkValidMove(4, 5) === true}`)
-  console.log(`checkValidMove(8, 7) is false: ${checkValidMove(8, 7) === false}`)
-  console.log(`checkValidMove(9, 8) is true: ${checkValidMove(9, 8) === true}`)
-  console.log(`checkValidMove(1, 2) is true: ${checkValidMove(1, 2) === true}`)
-  console.log(`checkValidMove(6, 2) is true: ${checkValidMove(6, 2) === true}`)
+  console.log(`findAdjacencyDirection(1, 0) is [1, 0]: ${findAdjacencyDirection(1, 0)[0] === 1 && findAdjacencyDirection(1, 0)[1] === 0}`)
+  console.log(`findAdjacencyDirection(1, 5) is [0, -1]: ${findAdjacencyDirection(1, 5)[0] === 0 && findAdjacencyDirection(1, 5)[1] === -1}`)
+  console.log(`findAdjacencyDirection(13, 5) is null: ${findAdjacencyDirection(13, 5) === null}`)
+  console.log(`findAdjacencyDirection(5, 1) is [0, 1]: ${findAdjacencyDirection(5, 1)[0] === 0 && findAdjacencyDirection(5, 1)[1] === 1}`)
+  console.log(`findAdjacencyDirection(3, 4) is null: ${findAdjacencyDirection(3, 4) === null}`)
+  console.log(`findAdjacencyDirection(4, 5) is [-1, 0]: ${findAdjacencyDirection(4, 5)[0] === -1 && findAdjacencyDirection(4, 5)[1] === 0}`)
+  console.log(`findAdjacencyDirection(8, 7) is null: ${findAdjacencyDirection(8, 7) === null}`)
+  console.log(`findAdjacencyDirection(9, 8) is [1, 0]: ${findAdjacencyDirection(9, 8)[0] === 1 && findAdjacencyDirection(9, 8)[1] === 0}`)
+  console.log(`findAdjacencyDirection(1, 2) is [-1, 0]: ${findAdjacencyDirection(1, 2)[0] === -1 && findAdjacencyDirection(1, 2)[1] === 0}`)
+  console.log(`findAdjacencyDirection(6, 2) is [0, 1]: ${findAdjacencyDirection(6, 2)[0] === 0 && findAdjacencyDirection(6, 2)[1] === 1}`)
   return true
 }
