@@ -9,6 +9,7 @@
 
 * {
   box-sizing: border-box;
+  font-family: sans-serif;
 }
 
 #game-area {
@@ -24,9 +25,18 @@
   height: var(--game-height);
 }
 
+.number {
+  color: white;
+  mix-blend-mode: difference;
+  position: relative;
+  padding: 0.25em;
+  font-size: 1.2em;
+  text-shadow: darkgrey 1px 1px;
+}
+
 .tile {
   background-image: var(--img-url);
-  background-size: auto var(--game-height);
+  background-size: var(--game-width) var(--game-height);
   height:100%;
   width:100%;
   background-position: inherit;
@@ -35,4 +45,8 @@
 .tile-container {
   border-radius: 5px;
   overflow: hidden;
+}
+
+.tile-container.moving {
+  transition: transform 0.2s ease-out;'
 }
