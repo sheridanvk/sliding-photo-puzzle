@@ -12,6 +12,16 @@
   font-family: sans-serif;
 }
 
+footer {
+  width: 100%;
+}
+
+footer #attribution {
+  width: 50vw;
+  margin: 1em auto;
+  text-align: center;
+}
+
 #game-area {
   display: grid;
   grid-gap: 3px;
