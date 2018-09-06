@@ -10,15 +10,32 @@
 * {
   box-sizing: border-box;
   font-family: sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 footer {
   width: 100%;
 }
 
-footer #attribution {
-  width: 50vw;
+#randomize-button {
+  width: 30vw;
   margin: 1em auto;
+  text-align: center;
+  background: cadetblue;
+  border-radius: 3px;
+  padding: 0.5em;
+  box-shadow: 1px 1px darkblue;
+  color: white;
+}
+
+
+#game-won {
+  border-radius: 3px;
+  display: block;
+  background-color: cornflowerblue;
+  padding: 0.5em;
+  width: 100%;
   text-align: center;
 }
 
@@ -29,7 +46,7 @@ footer #attribution {
   grid-template-columns: repeat(4, 1fr);
   
   position: relative;
-  margin: auto;
+  margin: 1em auto;
   
   width: var(--game-width);
   height: var(--game-height);
@@ -58,5 +75,23 @@ footer #attribution {
 }
 
 .tile-container.moving {
-  transition: transform 0.2s ease-out;'
+  transition: transform 0.15s ease-in;
+}
+
+body.winning-animation {
+  background: linear-gradient(269deg, #28c69e, #d07ce8);
+  background-size: 400% 400%;
+  -webkit-animation: winning-animation 1s ease infinite;
+  animation: winning-animation 1s ease infinite;
+}
+
+@-webkit-keyframes winning-animation {
+    0%{background-position:0% 52%}
+    50%{background-position:100% 49%}
+    100%{background-position:0% 52%}
+}
+@keyframes winning-animation { 
+    0%{background-position:0% 52%}
+    50%{background-position:100% 49%}
+    100%{background-position:0% 52%}
 }

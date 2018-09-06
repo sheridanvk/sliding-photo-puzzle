@@ -5,6 +5,7 @@ var tileState = {
   tileLoc: {},
   nullLoc: ''
 };
+var gameWon = {}
 
 function boardSetup() {
   var gameAspectRatio = img.naturalWidth / img.naturalHeight
@@ -40,13 +41,16 @@ function tileSetup() {
   var tileContainerArray = document.querySelectorAll('.tile-container')
   
   tileContainerArray.forEach(function(container,index) {
-    var backgroundPositionX = (index % 4) * 100/3
-    var backgroundPositionY = Math.floor(index/4) * 100/3
+    // inexplicably, Chrome Android browser does not like it when some background image positions are set to 100%.
+    // therefore capping this to 99.6%, which seems to display ok
+    var backgroundPositionX = (index % 4) * 99.6/3
+    var backgroundPositionY = Math.floor(index/4) * 99.6/3
     
     container.id = `container-${index}`
     container.style.backgroundPosition = `${backgroundPositionX}% ${backgroundPositionY}%`
     
     tileState['tileLoc'][container.id] = index
+    gameWon[container.id] = index
     
     var tileNumber = index + 1
     container.querySelector('.number').innerText = tileNumber
@@ -69,14 +73,53 @@ function tileSetup() {
 function deleteTile(tileId) {
   document.getElementById(tileId).remove()
   tileState['nullLoc'] = tileState['tileLoc'][tileId]
-  tileState['tileLoc'][tileId] = null
+  delete tileState['tileLoc'][tileId]
+  delete gameWon[tileId]
 }
 
-window.onload = function() {
+function randomizeBoard() { 
+  document.body.classList.remove('winning-animation')
+
+  var count = 100
+  while (count > 0) {
+    automaticMove()
+    --count
+  }
+  drawGame()
+  document.getElementById('randomize-button').style.display = 'none'
+}
+
+function automaticMove() {
+  console.log('randomising')
+  if (document.querySelectorAll('.moving').length === 0) {
+    var nullLoc = getNullLoc();
+    var tileLocs = getTileLocs();
+
+    var validMoves = {}
+
+    for (var key in tileLocs) {
+      if(findAdjacencyDirection(tileLocs[key], nullLoc))
+        validMoves[key] = tileLocs[key]
+    }
+    var candidateTileId = Object.keys(validMoves)[Math.floor(Math.random() * Object.keys(validMoves).length)]
+
+    
+    tileState['tileLoc'][candidateTileId] = nullLoc
+    tileState['nullLoc'] = validMoves[candidateTileId]
+  }
+  return null
+}
+
+function checkGameWon() {
+  return Object.keys(tileState['tileLoc']).every((key) => tileState['tileLoc'][key] ===  gameWon[key])
+}
+
+window.onload = () => {
   boardSetup()
   createTiles()
   tileSetup()
   drawGame()
+  document.getElementById('randomize-button').style.display = 'block'
   // testValidMoves()
 }
 
@@ -88,12 +131,17 @@ function makePlay(tileId) {
   if (findAdjacencyDirection(tileLoc, nullLoc)) {
     moveTile(tileId, tileLoc, nullLoc);
   }
+  if (checkGameWon()) {
+    document.getElementById('randomize-button').style.display = 'block'
+    document.body.classList.add('winning-animation')
+  }
 }
 
 // TODO: Refactor Tile into a class that contains all of this information
 function moveTile(tileId, tileLoc, nullLoc) {
   tileState['tileLoc'][tileId] = nullLoc
   tileState['nullLoc'] = tileLoc
+  
   var tileEl = document.getElementById(tileId)
   
   var direction = findAdjacencyDirection(tileLoc, nullLoc)
@@ -102,7 +150,7 @@ function moveTile(tileId, tileLoc, nullLoc) {
   var moveY = `calc(${direction[1]*-100}% + ${direction[1]*-3}px)`
   
   var styleSheetIndex = 
-      Object.keys(document.styleSheets).find((key) => document.styleSheets[key].href === 'https://sliding-photo-puzzle.glitch.me/style.css')
+      Object.keys(document.styleSheets).find((key) => document.styleSheets[key].href.includes('/style.css'))
   document.styleSheets[styleSheetIndex].insertRule(`#${tileId}.moving { 
       transform: translate(${moveX}, ${moveY}); 
   }`);
@@ -143,7 +191,7 @@ function findAdjacencyDirection(tileLoc, nullLoc) {
 }
 
 function drawGame() {
-  var tiles = tileState['tileLoc']
+  var tiles = getTileLocs()
   for (var key in tiles) {
     var tileLoc = tiles[key]
     
@@ -160,6 +208,14 @@ function drawGame() {
 
 function getTileLoc(tileId) {
   return tileState['tileLoc'][tileId]
+}
+
+function getTileLocs() {
+  return tileState['tileLoc']
+}
+
+function setTileLocs(tileLocs) {
+  tileState['tileLoc'] = tileLocs
 }
   
 function getNullLoc() {
