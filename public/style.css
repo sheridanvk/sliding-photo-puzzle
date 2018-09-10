@@ -75,15 +75,10 @@ footer {
   height:100%;
   width:100%;
   background-position: inherit;
-}
-
-.tile-container {
   border-radius: 5px;
-  overflow: hidden;
-  background-size: inherit;
 }
 
-.tile-container.moving {
+.tile.moving {
   transition: transform 0.15s ease-in;
 }
 
