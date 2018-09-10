@@ -1,24 +1,27 @@
-var gameArea = document.getElementById('game-area');
-var img = new Image();
-img.src = 'https://cdn.glitch.com/24dc13be-ff08-4007-bf38-7c45e0b5d9e1%2FIMG_20180826_104348.jpg?1535662149619'
+// Variables holding global game state
+// tileState holds the game state at any point in time
 var tileState = {
+  // tileLoc will be set up as a hash of objects of the form {CSS id: tile position} where the locations are numbered 0 to 15.
+  // nullLoc is the position of the gap, again numbers 0 through 15.
   tileLoc: {},
   nullLoc: ''
 };
-var gameWon = {}
+// gameWonState holds the state of the game that the player is aiming for
+var gameWonState = {}
 
+// Set up the board image, dimensions and initialise the tiles
 function boardSetup() {
+  var gameArea = document.getElementById('game-area');
+  var img = new Image();
+  img.src = 'https://cdn.glitch.com/24dc13be-ff08-4007-bf38-7c45e0b5d9e1%2FIMG_20180826_104348.jpg?1535662149619'
+  
   var gameAspectRatio = img.naturalWidth / img.naturalHeight
   gameArea.style.setProperty('--img-url', `url(${img.src}`)
   gameArea.style.setProperty('--game-aspect-ratio', gameAspectRatio)
-}
-
-function createTiles() {
+  
   var tileHTML = 
-      `<div class="tile-container">
-          <div class="tile">
-            <div class="number">
-            </div>
+      `<div class="tile">
+          <div class="number">
           </div>
         </div>`
   var tiles = [...Array(16)].map(_ => tileHTML)
@@ -26,46 +29,45 @@ function createTiles() {
   gameArea.innerHTML = tiles.join("")
 }
 
+// Position the image in the right place on each tile to reassemble it on the grid, and enable click events on the tiles
 function tileSetup() {
-  var tileContainerArray = document.querySelectorAll('.tile-container')
+  var tileArray = document.querySelectorAll('.tile')
   
-  tileContainerArray.forEach(function(container,index) {
+  tileArray.forEach(function(tile,index) {
     // inexplicably, Chrome Android browser does not like it when some background image positions are set to 100%.
     // therefore capping this to 99.6%, which seems to display ok
     var backgroundPositionX = (index % 4) * 99.6/3
     var backgroundPositionY = Math.floor(index/4) * 99.6/3
     
-    container.id = `container-${index}`
-    container.style.backgroundPosition = `${backgroundPositionX}% ${backgroundPositionY}%`
+    tile.id = `tile-${index}`
+    tile.style.backgroundPosition = `${backgroundPositionX}% ${backgroundPositionY}%`
     
-    tileState['tileLoc'][container.id] = index
-    gameWon[container.id] = index
+    tileState['tileLoc'][tile.id] = index
+    gameWonState[tile.id] = index
     
     var tileNumber = index + 1
-    container.querySelector('.number').innerText = tileNumber
+    tile.querySelector('.number').innerText = tileNumber
     
     
-    container.addEventListener('click', function(e) {
+    tile.addEventListener('click', function(e) {
       if (document.querySelectorAll('.moving').length === 0) {
-        if (e.target !== this) {
-          e.target.parentElement.click()
-        } else {
-          makePlay(e.target.id)
-        }
+        makePlay(e.target.id)
       }
     })
   })
-  //TODO: make this user-customisable
-  deleteTile('container-15')
+  //TODO: make choice of tile to remove user-customisable
+  deleteTile('tile-15')
 }
 
 function deleteTile(tileId) {
   document.getElementById(tileId).remove()
   tileState['nullLoc'] = tileState['tileLoc'][tileId]
   delete tileState['tileLoc'][tileId]
-  delete gameWon[tileId]
+  delete gameWonState[tileId]
 }
 
+// Put the board into a random state by making N moves back from the solved state.
+// Randomised configurations only result in a solvable board 50% of the time.
 function randomizeBoard() { 
   document.body.classList.remove('winning-animation')
 
@@ -79,7 +81,6 @@ function randomizeBoard() {
 }
 
 function automaticMove() {
-  console.log('randomising')
   if (document.querySelectorAll('.moving').length === 0) {
     var nullLoc = getNullLoc();
     var tileLocs = getTileLocs();
@@ -100,16 +101,7 @@ function automaticMove() {
 }
 
 function checkGameWon() {
-  return Object.keys(tileState['tileLoc']).every((key) => tileState['tileLoc'][key] ===  gameWon[key])
-}
-
-window.onload = () => {
-  boardSetup()
-  createTiles()
-  tileSetup()
-  drawGame()
-  document.getElementById('randomize-button').style.display = 'block'
-  // testValidMoves()
+  return Object.keys(tileState['tileLoc']).every((key) => tileState['tileLoc'][key] ===  gameWonState[key])
 }
 
 // Game play
@@ -127,6 +119,9 @@ function makePlay(tileId) {
 }
 
 // TODO: Refactor Tile into a class that contains all of this information
+// It's not possible to apply transitions to elements moving between different positions on a grid.
+// So here we fake it by applying a translate function in the direction in which the tile needs to move.
+// We then redraw the board with all tiles on the grid once the transition's done.
 function moveTile(tileId, tileLoc, nullLoc) {
   tileState['tileLoc'][tileId] = nullLoc
   tileState['nullLoc'] = tileLoc
@@ -138,6 +133,8 @@ function moveTile(tileId, tileLoc, nullLoc) {
   var moveX = `calc(${direction[0]*-100}% + ${direction[0]*-3}px)`
   var moveY = `calc(${direction[1]*-100}% + ${direction[1]*-3}px)`
   
+  // The .moving class can't exist until we know what direction it needs to move in. 
+  // So to add the rule, we add it to the stylesheet, not to the element itself.
   var styleSheetIndex = 
       Object.keys(document.styleSheets).find((key) => document.styleSheets[key].href.includes('/style.css'))
   document.styleSheets[styleSheetIndex].insertRule(`#${tileId}.moving { 
@@ -162,6 +159,7 @@ function moveTile(tileId, tileLoc, nullLoc) {
   tileEl.classList.add('moving')
 }
 
+// Given a tile location and the location of the empty spot, tell us whether a move's valid, and if so, in what direction
 function findAdjacencyDirection(tileLoc, nullLoc) {
   /* Return an x or y direction relative to the null space if the tile is adjacent, or if it isn't then return null
              [0, -1]
@@ -179,6 +177,7 @@ function findAdjacencyDirection(tileLoc, nullLoc) {
   } else return null
 }
 
+// Given the current board state, draw all the tiles on the grid at the right spots
 function drawGame() {
   var tiles = getTileLocs()
   for (var key in tiles) {
@@ -188,9 +187,9 @@ function drawGame() {
       var gridColumnStart = (tileLoc % 4) + 1
       var gridRowStart = Math.floor(tileLoc/4) + 1
 
-      var container = document.getElementById(key)
-      container.style.gridColumn = `${gridColumnStart} / ${gridColumnStart + 1}`
-      container.style.gridRow = `${gridRowStart} / ${gridRowStart + 1}`
+      var tile = document.getElementById(key)
+      tile.style.gridColumn = `${gridColumnStart} / ${gridColumnStart + 1}`
+      tile.style.gridRow = `${gridRowStart} / ${gridRowStart + 1}`
     }
   };
 }
@@ -223,4 +222,13 @@ function testValidMoves() {
   console.log(`findAdjacencyDirection(1, 2) is [-1, 0]: ${findAdjacencyDirection(1, 2)[0] === -1 && findAdjacencyDirection(1, 2)[1] === 0}`)
   console.log(`findAdjacencyDirection(6, 2) is [0, 1]: ${findAdjacencyDirection(6, 2)[0] === 0 && findAdjacencyDirection(6, 2)[1] === 1}`)
   return true
+}
+
+// Start the game once everything's loaded.
+window.onload = function () {
+  boardSetup()
+  tileSetup()
+  drawGame()
+  document.getElementById('randomize-button').style.display = 'block'
+  //testValidMoves()
 }
