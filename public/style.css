@@ -2,8 +2,7 @@
 /* called by your view template */
 
 :root {
-  --game-width: 0vw;
-  --game-height: 0vw;
+  --game-aspect-ratio: 1;
   --img-url:'';
 }
 
@@ -48,8 +47,17 @@ footer {
   position: relative;
   margin: 1em auto;
   
-  width: var(--game-width);
-  height: var(--game-height);
+  height: 80vh;
+  width: calc(80vh * var(--game-aspect-ratio)) ;
+  background-size: calc(80vh * var(--game-aspect-ratio)) 80vh;
+}
+
+@media screen and (max-width: 600px) {
+  #game-area {
+    width: 90vw;
+    height: calc(90vw / var(--game-aspect-ratio)) ;
+    background-size: 90vw calc(90vw / var(--game-aspect-ratio));
+  }
 }
 
 .number {
@@ -63,7 +71,7 @@ footer {
 
 .tile {
   background-image: var(--img-url);
-  background-size: var(--game-width) var(--game-height);
+  background-size: inherit;
   height:100%;
   width:100%;
   background-position: inherit;
@@ -72,6 +80,7 @@ footer {
 .tile-container {
   border-radius: 5px;
   overflow: hidden;
+  background-size: inherit;
 }
 
 .tile-container.moving {
