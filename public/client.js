@@ -10,28 +10,35 @@ var tileState = {
 var gameWonState = {}
 
 // Set up the board image, dimensions and initialise the tiles
-function boardSetup() {
+function gameSetup() {
   var gameArea = document.getElementById('game-area');
   var img = new Image();
   img.src = 'https://cdn.glitch.com/24dc13be-ff08-4007-bf38-7c45e0b5d9e1%2FIMG_20180826_104348.jpg?1535662149619'
-  
-  var gameAspectRatio = img.naturalWidth / img.naturalHeight
-  gameArea.style.setProperty('--img-url', `url(${img.src}`)
-  gameArea.style.setProperty('--game-aspect-ratio', gameAspectRatio)
-  
-  var tileHTML = 
+
+  img.onload = function() {
+    var gameAspectRatio = img.naturalWidth / img.naturalHeight
+    gameArea.style.setProperty('--img-url', `url(${img.src}`)
+    gameArea.style.setProperty('--game-aspect-ratio', gameAspectRatio)
+    
+    var tileHTML = 
       `<div class="tile">
           <div class="number">
           </div>
         </div>`
-  var tiles = [...Array(16)].map(_ => tileHTML)
-  
-  gameArea.innerHTML = tiles.join("")
+    var tiles = [...Array(16)].map(_ => tileHTML)
+
+    gameArea.innerHTML = tiles.join("")
+
+    tileSetup()
+    drawGame()
+    document.getElementById('randomize-button').style.display = 'block'
+  }
 }
 
 // Position the image in the right place on each tile to reassemble it on the grid, and enable click events on the tiles
 function tileSetup() {
   var tileArray = document.querySelectorAll('.tile')
+  var gameArea = document.getElementById('game-area')
   
   tileArray.forEach(function(tile,index) {
     // inexplicably, Chrome Android browser does not like it when some background image positions are set to 100%.
@@ -226,9 +233,6 @@ function testValidMoves() {
 
 // Start the game once everything's loaded.
 window.onload = function () {
-  boardSetup()
-  tileSetup()
-  drawGame()
-  document.getElementById('randomize-button').style.display = 'block'
+  gameSetup()
   //testValidMoves()
 }
