@@ -56,7 +56,8 @@ function tileSetup() {
     tile.querySelector(".number").innerText = tileNumber;
 
     tile.addEventListener("click", function(e) {
-      if (document.querySelectorAll(".moving").length === 0) {
+      if (e.target !== this) e.target.parentElement.click();
+      else if (document.querySelectorAll(".moving").length === 0) {
         makePlay(e.target.id);
       }
     });
