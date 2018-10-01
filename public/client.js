@@ -1,31 +1,34 @@
 // Variables holding global game state
 // tileState holds the game state at any point in time
-var tileState = {
+const tileState = {
   // tileLoc will be set up as a hash of objects of the form {CSS id: tile position} where the locations are numbered 0 to 15.
   // nullLoc is the position of the gap, again numbers 0 through 15.
   tileLoc: {},
   nullLoc: ""
 };
 // gameWonState holds the state of the game that the player is aiming for
-var gameWonState = {};
+const gameWonState = {
+  tileLoc: {},
+  started: false
+};
 
 // Set up the board image, dimensions and initialise the tiles
 function gameSetup() {
-  var gameArea = document.getElementById("game-area");
-  var img = new Image();
+  const gameArea = document.getElementById("game-area");
+  const img = new Image();
   img.src =
     "https://cdn.glitch.com/24dc13be-ff08-4007-bf38-7c45e0b5d9e1%2FIMG_20180826_104348.jpg?1537812587772";
 
   img.onload = function() {
-    var gameAspectRatio = img.naturalWidth / img.naturalHeight;
+    const gameAspectRatio = img.naturalWidth / img.naturalHeight;
     gameArea.style.setProperty("--img-url", `url(${img.src}`);
     gameArea.style.setProperty("--game-aspect-ratio", gameAspectRatio);
 
-    var tileHTML = `<div class="tile">
+    const tileHTML = `<div class="tile" tabindex="0">
           <div class="number">
           </div>
         </div>`;
-    var tiles = [...Array(16)].map(_ => tileHTML);
+    const tiles = [...Array(16)].map(_ => tileHTML);
 
     gameArea.innerHTML = tiles.join("");
 
@@ -37,48 +40,94 @@ function gameSetup() {
 
 // Position the image in the right place on each tile to reassemble it on the grid, and enable click events on the tiles
 function tileSetup() {
-  var tileArray = document.querySelectorAll(".tile");
-  var gameArea = document.getElementById("game-area");
+  const tileArray = document.querySelectorAll(".tile");
+  const gameArea = document.getElementById("game-area");
 
   tileArray.forEach(function(tile, index) {
     // inexplicably, Chrome Android browser does not like it when some background image positions are set to 100%.
     // therefore capping this to 99.6%, which seems to display ok
-    var backgroundPositionX = ((index % 4) * 99.6) / 3;
-    var backgroundPositionY = (Math.floor(index / 4) * 99.6) / 3;
+    const backgroundPositionX = ((index % 4) * 99.6) / 3;
+    const backgroundPositionY = (Math.floor(index / 4) * 99.6) / 3;
 
     tile.id = `tile-${index}`;
     tile.style.backgroundPosition = `${backgroundPositionX}% ${backgroundPositionY}%`;
 
     tileState["tileLoc"][tile.id] = index;
-    gameWonState[tile.id] = index;
+    gameWonState["tileLoc"][tile.id] = index;
 
-    var tileNumber = index + 1;
+    const tileNumber = index + 1;
     tile.querySelector(".number").innerText = tileNumber;
 
-    tile.addEventListener("click", function(e) {
-      if (e.target !== this) e.target.parentElement.click();
-      else if (document.querySelectorAll(".moving").length === 0) {
-        makePlay(e.target.id);
-      }
-    });
+    // tile.addEventListener("click", function(e) {
+    //   if (e.target !== this) e.target.parentElement.click();
+    //   else if (document.querySelectorAll(".moving").length === 0) {
+    //     makePlay(e.target.id);
+    //   }
+    // });
+
+    tile.addEventListener("mousedown", startSwipe);
+    tile.addEventListener("touchstart", startSwipe);
   });
+
   //TODO: make choice of tile to remove user-customisable
   deleteTile("tile-15");
+}
+
+// from the excellent tutorial on unifying swipe types here: https://codepen.io/thebabydino/pen/qxebVa
+function unify(e) {
+  return e.changedTouches ? e.changedTouches[0] : e;
+}
+
+function startSwipe(e) {
+  e.preventDefault();
+  console.log("move started", e);
+  let endType;
+
+  if (e.type === "mousedown") {
+    endType = "mouseup";
+  } else {
+    endType = "touchend";
+  }
+
+  document.addEventListener(endType, function detectSwipeDirection(f) {
+    let swipeDirection = [
+      unify(f).clientX - unify(e).clientX,
+      unify(f).clientY - unify(e).clientY
+    ];
+    // turn swipe direction into a unit vector to make both values <= |1| (http://www.algebralab.org/lessons/lesson.aspx?file=Trigonometry_TrigVectorUnits.xml)
+    const denominator = Math.sqrt(
+      swipeDirection[0] ** 2 + swipeDirection[1] ** 2
+    );
+    console.log("denominator", denominator);
+
+    if (denominator < 5 && endType === "touchend") {
+      // if there's a slight movement by the user on a touch screen, treat it as a tap
+      swipeDirection = [0, 0];
+    } else if (denominator !== 0) {
+      swipeDirection[0] = swipeDirection[0] / denominator;
+      swipeDirection[1] = swipeDirection[1] / denominator;
+    }
+
+    makePlay(e.target.id, swipeDirection);
+
+    document.removeEventListener(endType, detectSwipeDirection);
+  });
 }
 
 function deleteTile(tileId) {
   document.getElementById(tileId).remove();
   tileState["nullLoc"] = tileState["tileLoc"][tileId];
   delete tileState["tileLoc"][tileId];
-  delete gameWonState[tileId];
+  delete gameWonState["tileLoc"][tileId];
 }
 
 // Put the board into a random state by making N moves back from the solved state.
-// Randomised configurations only result in a solvable board 50% of the time.
+// We can't use a randomised configuration, as it only results in a solvable board 50% of the time.
 function randomizeBoard() {
+  gameWonState.started = true;
   document.body.classList.remove("winning-animation");
 
-  var count = 100;
+  let count = 100;
   while (count > 0) {
     automaticMove();
     --count;
@@ -89,16 +138,16 @@ function randomizeBoard() {
 
 function automaticMove() {
   if (document.querySelectorAll(".moving").length === 0) {
-    var nullLoc = getNullLoc();
-    var tileLocs = getTileLocs();
+    const nullLoc = getNullLoc();
+    const tileLocs = getTileLocs();
 
-    var validMoves = {};
+    const validMoves = {};
 
-    for (var key in tileLocs) {
+    for (let key in tileLocs) {
       if (findAdjacencyDirection(tileLocs[key], nullLoc))
         validMoves[key] = tileLocs[key];
     }
-    var candidateTileId = Object.keys(validMoves)[
+    const candidateTileId = Object.keys(validMoves)[
       Math.floor(Math.random() * Object.keys(validMoves).length)
     ];
 
@@ -109,22 +158,36 @@ function automaticMove() {
 }
 
 function checkGameWon() {
-  return Object.keys(tileState["tileLoc"]).every(
-    key => tileState["tileLoc"][key] === gameWonState[key]
+  return (
+    gameWonState.started &&
+    Object.keys(tileState["tileLoc"]).every(
+      key => tileState["tileLoc"][key] === gameWonState["tileLoc"][key]
+    )
   );
 }
 
 // Game play
-function makePlay(tileId) {
-  var tileLoc = getTileLoc(tileId);
-  var nullLoc = getNullLoc();
-  console.log(findAdjacencyDirection(tileLoc, nullLoc));
-  if (findAdjacencyDirection(tileLoc, nullLoc)) {
-    moveTile(tileId, tileLoc, nullLoc);
+function makePlay(tileId, swipeDirection) {
+  console.log("swipe dir", swipeDirection);
+  const tileLoc = getTileLoc(tileId);
+  const nullLoc = getNullLoc();
+  const tileRelativePos = findAdjacencyDirection(tileLoc, nullLoc);
+  console.log("tile relative pos", tileRelativePos);
+  if (tileRelativePos) {
+    if (
+      swipeDirection.toString() === [0, 0].toString() ||
+      (Math.abs(swipeDirection[0] + tileRelativePos[0]) < 0.5 &&
+        Math.abs(swipeDirection[1] + tileRelativePos[1]) < 0.5)
+    ) {
+      moveTile(tileId, tileLoc, nullLoc);
+    }
   }
   if (checkGameWon()) {
     document.getElementById("randomize-button").style.display = "block";
     document.body.classList.add("winning-animation");
+    setTimeout(function() {
+      document.body.classList.remove("winning-animation");
+    }, 10000);
   }
 }
 
@@ -136,16 +199,16 @@ function moveTile(tileId, tileLoc, nullLoc) {
   tileState["tileLoc"][tileId] = nullLoc;
   tileState["nullLoc"] = tileLoc;
 
-  var tileEl = document.getElementById(tileId);
+  const tileEl = document.getElementById(tileId);
 
-  var direction = findAdjacencyDirection(tileLoc, nullLoc);
+  const direction = findAdjacencyDirection(tileLoc, nullLoc);
   // need to move the tile 100% of the x or y direction, plus 3px to allow for grid-gap
-  var moveX = `calc(${direction[0] * -100}% + ${direction[0] * -3}px)`;
-  var moveY = `calc(${direction[1] * -100}% + ${direction[1] * -3}px)`;
+  const moveX = `calc(${direction[0] * -100}% + ${direction[0] * -3}px)`;
+  const moveY = `calc(${direction[1] * -100}% + ${direction[1] * -3}px)`;
 
   // The .moving class can't exist until we know what direction it needs to move in.
   // So to add the rule, we add it to the stylesheet, not to the element itself.
-  var styleSheetIndex = Object.keys(document.styleSheets).find(key =>
+  const styleSheetIndex = Object.keys(document.styleSheets).find(key =>
     document.styleSheets[key].href.includes("/style.css")
   );
   document.styleSheets[styleSheetIndex].insertRule(`#${tileId}.moving { 
@@ -155,8 +218,8 @@ function moveTile(tileId, tileLoc, nullLoc) {
   tileEl.addEventListener("transitionend", function() {
     // Note: new rules are added at 0, so we know we can remove the rule we added earlier from position 0.
     // We'll still check in case we had a race condition and it's already gone :)
-    var cssRules = document.styleSheets[styleSheetIndex].cssRules;
-    var styleRuleIndex = Object.keys(cssRules).find(
+    const cssRules = document.styleSheets[styleSheetIndex].cssRules;
+    const styleRuleIndex = Object.keys(cssRules).find(
       key => cssRules[key].selectorText === `#${tileId}.moving`
     );
     if (styleRuleIndex) {
@@ -196,16 +259,16 @@ function findAdjacencyDirection(tileLoc, nullLoc) {
 
 // Given the current board state, draw all the tiles on the grid at the right spots
 function drawGame() {
-  var tiles = getTileLocs();
-  for (var key in tiles) {
-    var tileLoc = tiles[key];
+  const tiles = getTileLocs();
+  for (let key in tiles) {
+    const tileLoc = tiles[key];
 
     if (tileLoc >= 0) {
       // only attempt to draw tile if it has a location
-      var gridColumnStart = (tileLoc % 4) + 1;
-      var gridRowStart = Math.floor(tileLoc / 4) + 1;
+      const gridColumnStart = (tileLoc % 4) + 1;
+      const gridRowStart = Math.floor(tileLoc / 4) + 1;
 
-      var tile = document.getElementById(key);
+      const tile = document.getElementById(key);
       tile.style.gridColumn = `${gridColumnStart} / ${gridColumnStart + 1}`;
       tile.style.gridRow = `${gridRowStart} / ${gridRowStart + 1}`;
     }
@@ -288,6 +351,10 @@ function testValidMoves() {
 
 // Start the game once everything's loaded.
 window.onload = function() {
+  document.addEventListener("touchmove", function(e) {
+    console.log("dragged");
+    console.log(e.target);
+  });
   gameSetup();
   //testValidMoves()
 };

@@ -6,26 +6,25 @@
   --img-url:'';
 }
 
-* {
+body {
   box-sizing: border-box;
   font-family: sans-serif;
   margin: 0;
   padding: 0;
-}
-
-footer {
-  width: 100%;
+  touch-action:none;
 }
 
 #randomize-button {
-  width: 30vw;
+  width: 200px;
   margin: 1em auto;
   text-align: center;
   background: cadetblue;
   border-radius: 3px;
   padding: 0.5em;
   box-shadow: 1px 1px darkblue;
-  color: white;
+  color: white;    
+  font-size: 1em;
+  border: none;
 }
 
 
@@ -50,6 +49,7 @@ footer {
   height: 80vh;
   width: calc(80vh * var(--game-aspect-ratio)) ;
   background-size: calc(80vh * var(--game-aspect-ratio)) 80vh;
+  user-select: none;
 }
 
 @media screen and (max-width: 600px) {
@@ -85,8 +85,8 @@ footer {
 body.winning-animation {
   background: linear-gradient(269deg, #28c69e, #d07ce8);
   background-size: 400% 400%;
-  -webkit-animation: winning-animation 1s ease infinite;
-  animation: winning-animation 1s ease infinite;
+  -webkit-animation: winning-animation 1s ease 10;
+  animation: winning-animation 1s ease 10;
 }
 
 @-webkit-keyframes winning-animation {
