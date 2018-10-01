@@ -18,6 +18,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/reset.css">
     <link rel="stylesheet" href="/style.css">
     
     <!-- import the webpage's client-side javascript file -->
@@ -29,16 +30,14 @@
     
     
     
-
+    <div id="container">
       <div id="game-area">
         <!-- game gets loaded in here in client.js -->
       </div>
-
-    <footer>
-      <div id="randomize-button" style="display: none;" onclick="randomizeBoard()">
+      <button id="randomize-button" style="display: none;" onclick="randomizeBoard()">
         Randomize!
-      </div>
-    </footer>
+      </button>
+    </div>
 
     <!-- include the Glitch button to show what the webpage is about and
           to make it easier for folks to view source and remix -->

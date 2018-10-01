@@ -7,7 +7,10 @@ const tileState = {
   nullLoc: ""
 };
 // gameWonState holds the state of the game that the player is aiming for
-const gameWonState = {};
+const gameWonState = {
+  tileLoc: {},
+  started: false
+};
 
 // Set up the board image, dimensions and initialise the tiles
 function gameSetup() {
@@ -21,7 +24,7 @@ function gameSetup() {
     gameArea.style.setProperty("--img-url", `url(${img.src}`);
     gameArea.style.setProperty("--game-aspect-ratio", gameAspectRatio);
 
-    const tileHTML = `<div class="tile">
+    const tileHTML = `<div class="tile" tabindex="0">
           <div class="number">
           </div>
         </div>`;
@@ -50,33 +53,78 @@ function tileSetup() {
     tile.style.backgroundPosition = `${backgroundPositionX}% ${backgroundPositionY}%`;
 
     tileState["tileLoc"][tile.id] = index;
-    gameWonState[tile.id] = index;
+    gameWonState["tileLoc"][tile.id] = index;
 
     const tileNumber = index + 1;
     tile.querySelector(".number").innerText = tileNumber;
 
-    tile.addEventListener("click", function(e) {
-      if (e.target !== this) e.target.parentElement.click();
-      else if (document.querySelectorAll(".moving").length === 0) {
-        makePlay(e.target.id);
-      }
-    });
+    // tile.addEventListener("click", function(e) {
+    //   if (e.target !== this) e.target.parentElement.click();
+    //   else if (document.querySelectorAll(".moving").length === 0) {
+    //     makePlay(e.target.id);
+    //   }
+    // });
+
+    tile.addEventListener("mousedown", startSwipe);
+    tile.addEventListener("touchstart", startSwipe);
   });
-  
+
   //TODO: make choice of tile to remove user-customisable
   deleteTile("tile-15");
+}
+
+// from the excellent tutorial on unifying swipe types here: https://codepen.io/thebabydino/pen/qxebVa
+function unify(e) {
+  return e.changedTouches ? e.changedTouches[0] : e;
+}
+
+function startSwipe(e) {
+  e.preventDefault();
+  console.log("move started", e);
+  let endType;
+
+  if (e.type === "mousedown") {
+    endType = "mouseup";
+  } else {
+    endType = "touchend";
+  }
+
+  document.addEventListener(endType, function detectSwipeDirection(f) {
+    let swipeDirection = [
+      unify(f).clientX - unify(e).clientX,
+      unify(f).clientY - unify(e).clientY
+    ];
+    // turn swipe direction into a unit vector to make both values <= |1| (http://www.algebralab.org/lessons/lesson.aspx?file=Trigonometry_TrigVectorUnits.xml)
+    const denominator = Math.sqrt(
+      swipeDirection[0] ** 2 + swipeDirection[1] ** 2
+    );
+    console.log("denominator", denominator);
+
+    if (denominator < 5 && endType === "touchend") {
+      // if there's a slight movement by the user on a touch screen, treat it as a tap
+      swipeDirection = [0, 0];
+    } else if (denominator !== 0) {
+      swipeDirection[0] = swipeDirection[0] / denominator;
+      swipeDirection[1] = swipeDirection[1] / denominator;
+    }
+
+    makePlay(e.target.id, swipeDirection);
+
+    document.removeEventListener(endType, detectSwipeDirection);
+  });
 }
 
 function deleteTile(tileId) {
   document.getElementById(tileId).remove();
   tileState["nullLoc"] = tileState["tileLoc"][tileId];
   delete tileState["tileLoc"][tileId];
-  delete gameWonState[tileId];
+  delete gameWonState["tileLoc"][tileId];
 }
 
 // Put the board into a random state by making N moves back from the solved state.
-// Randomised configurations only result in a solvable board 50% of the time.
+// We can't use a randomised configuration, as it only results in a solvable board 50% of the time.
 function randomizeBoard() {
+  gameWonState.started = true;
   document.body.classList.remove("winning-animation");
 
   let count = 100;
@@ -110,22 +158,36 @@ function automaticMove() {
 }
 
 function checkGameWon() {
-  return Object.keys(tileState["tileLoc"]).every(
-    key => tileState["tileLoc"][key] === gameWonState[key]
+  return (
+    gameWonState.started &&
+    Object.keys(tileState["tileLoc"]).every(
+      key => tileState["tileLoc"][key] === gameWonState["tileLoc"][key]
+    )
   );
 }
 
 // Game play
-function makePlay(tileId) {
+function makePlay(tileId, swipeDirection) {
+  console.log("swipe dir", swipeDirection);
   const tileLoc = getTileLoc(tileId);
   const nullLoc = getNullLoc();
-  console.log(findAdjacencyDirection(tileLoc, nullLoc));
-  if (findAdjacencyDirection(tileLoc, nullLoc)) {
-    moveTile(tileId, tileLoc, nullLoc);
+  const tileRelativePos = findAdjacencyDirection(tileLoc, nullLoc);
+  console.log("tile relative pos", tileRelativePos);
+  if (tileRelativePos) {
+    if (
+      swipeDirection.toString() === [0, 0].toString() ||
+      (Math.abs(swipeDirection[0] + tileRelativePos[0]) < 0.5 &&
+        Math.abs(swipeDirection[1] + tileRelativePos[1]) < 0.5)
+    ) {
+      moveTile(tileId, tileLoc, nullLoc);
+    }
   }
   if (checkGameWon()) {
     document.getElementById("randomize-button").style.display = "block";
     document.body.classList.add("winning-animation");
+    setTimeout(function() {
+      document.body.classList.remove("winning-animation");
+    }, 10000);
   }
 }
 
@@ -289,6 +351,10 @@ function testValidMoves() {
 
 // Start the game once everything's loaded.
 window.onload = function() {
+  document.addEventListener("touchmove", function(e) {
+    console.log("dragged");
+    console.log(e.target);
+  });
   gameSetup();
   //testValidMoves()
 };
