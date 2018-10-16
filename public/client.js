@@ -54,8 +54,6 @@ function backgroundPosition(idx) {
 // Position the image in the right place on each tile to reassemble it on the grid, and enable click events on the tiles
 function tileSetup() {
   const tileArray = document.querySelectorAll(".tile");
-  const gameArea = document.getElementById("game-area");
-
   tileArray.forEach((tile, index) => {
     tile.id = `tile-${index}`;
     tile.style.backgroundPosition = `${backgroundPosition((index % 4))}% ${backgroundPosition(Math.floor(index / 4))}%`;
@@ -63,16 +61,8 @@ function tileSetup() {
     tileState["tileLoc"][tile.id] = index;
     gameWonState["tileLoc"][tile.id] = index;
 
-    const tileNumber = index + 1;
-    tile.querySelector(".number").innerText = tileNumber;
-
-    // tile.addEventListener("click", function(e) {
-    //   if (e.target !== this) e.target.parentElement.click();
-    //   else if (document.querySelectorAll(".moving").length === 0) {
-    //     makePlay(e.target.id);
-    //   }
-    // });
-
+    tile.querySelector(".number").innerText = index + 1;
+ 
     tile.addEventListener("mousedown", startSwipe);
     tile.addEventListener("touchstart", startSwipe);
   });
@@ -89,13 +79,7 @@ function unify(e) {
 function startSwipe(e) {
   e.preventDefault();
   console.log("move started", e);
-  let endType;
-
-  if (e.type === "mousedown") {
-    endType = "mouseup";
-  } else {
-    endType = "touchend";
-  }
+  let endType = e.type === "mousedown" ? "mouseup" : "touchend";
 
   document.addEventListener(endType, function detectSwipeDirection(f) {
     let swipeDirection = [
