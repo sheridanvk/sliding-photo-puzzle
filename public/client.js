@@ -38,19 +38,27 @@ function gameSetup() {
   };
 }
 
+/**
+ * Chrome Android browser does not like it when
+ * 
+ * background image positions are set to 100%. capping this to 99.6%, which seems ok
+ * 
+ * @param {number} idx
+ * 
+ * @return {number}
+ */
+function backgroundPosition(idx) {
+  return (idx * 99.6) / 3;
+}
+
 // Position the image in the right place on each tile to reassemble it on the grid, and enable click events on the tiles
 function tileSetup() {
   const tileArray = document.querySelectorAll(".tile");
   const gameArea = document.getElementById("game-area");
 
-  tileArray.forEach(function(tile, index) {
-    // inexplicably, Chrome Android browser does not like it when some background image positions are set to 100%.
-    // therefore capping this to 99.6%, which seems to display ok
-    const backgroundPositionX = ((index % 4) * 99.6) / 3;
-    const backgroundPositionY = (Math.floor(index / 4) * 99.6) / 3;
-
+  tileArray.forEach((tile, index) => {
     tile.id = `tile-${index}`;
-    tile.style.backgroundPosition = `${backgroundPositionX}% ${backgroundPositionY}%`;
+    tile.style.backgroundPosition = `${backgroundPosition((index % 4))}% ${backgroundPosition(Math.floor(index / 4))}%`;
 
     tileState["tileLoc"][tile.id] = index;
     gameWonState["tileLoc"][tile.id] = index;
@@ -275,8 +283,15 @@ function drawGame() {
   }
 }
 
+/**
+ * THis is the function
+ * 
+ * @param {string} tileId 
+ * 
+ * @return string
+ */
 function getTileLoc(tileId) {
-  return tileState["tileLoc"][tileId];
+  return getTileLocs()[tileId];
 }
 
 function getTileLocs() {
