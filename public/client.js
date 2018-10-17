@@ -12,12 +12,30 @@ const gameWonState = {
   started: false
 };
 
+function upload(file) {
+  const selectedFile = document.getElementById('image-upload').files[0];
+  console.log(JSON.stringify(selectedFile), selectedFile);
+  
+
+  const reader = new FileReader();
+  console.log(reader);
+  debugger;
+  reader.onload = function() {
+    const img = new Image();
+    img.src = reader.result;
+    localStorage.setItem('userUpload', img.src);
+
+    document.querySelector('body').innerHTML = localStorage.getItem('userUpload');
+  }  
+}
+
 // Set up the board image, dimensions and initialise the tiles
 function gameSetup() {
   const gameArea = document.getElementById("game-area");
   const img = new Image();
-  img.src =
-    "https://cdn.glitch.com/24dc13be-ff08-4007-bf38-7c45e0b5d9e1%2FIMG_20180826_104348.jpg?1537812587772";
+  // console.log((localStorage.getItem("userUpload").name));
+  // debugger;
+  img.src = "https://cdn.glitch.com/24dc13be-ff08-4007-bf38-7c45e0b5d9e1%2FIMG_20180826_104348.jpg?1537812587772";
 
   img.onload = function() {
     const gameAspectRatio = img.naturalWidth / img.naturalHeight;
