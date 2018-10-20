@@ -41,30 +41,20 @@ function gameSetup() {
 // Position the image in the right place on each tile to reassemble it on the grid, and enable click events on the tiles
 function tileSetup() {
   const tileArray = document.querySelectorAll(".tile");
-  const gameArea = document.getElementById("game-area");
-
-  tileArray.forEach(function(tile, index) {
-    // inexplicably, Chrome Android browser does not like it when some background image positions are set to 100%.
-    // therefore capping this to 99.6%, which seems to display ok
-    const backgroundPositionX = ((index % 4) * 99.6) / 3;
-    const backgroundPositionY = (Math.floor(index / 4) * 99.6) / 3;
-
+  tileArray.forEach((tile, index) => {
     tile.id = `tile-${index}`;
+    
+    // inexplicably, Chrome Android browser does not like it when some background image positions are set to 100%.	
+    // therefore capping this to 99.6%, which seems to display ok
+    const backgroundPositionX = ((index % 4) * 99.6) / 3;	
+    const backgroundPositionY = (Math.floor(index / 4) * 99.6) / 3;
     tile.style.backgroundPosition = `${backgroundPositionX}% ${backgroundPositionY}%`;
 
     tileState["tileLoc"][tile.id] = index;
     gameWonState["tileLoc"][tile.id] = index;
 
-    const tileNumber = index + 1;
-    tile.querySelector(".number").innerText = tileNumber;
-
-    // tile.addEventListener("click", function(e) {
-    //   if (e.target !== this) e.target.parentElement.click();
-    //   else if (document.querySelectorAll(".moving").length === 0) {
-    //     makePlay(e.target.id);
-    //   }
-    // });
-
+    tile.querySelector(".number").innerText = index + 1;
+ 
     tile.addEventListener("mousedown", startSwipe);
     tile.addEventListener("touchstart", startSwipe);
   });
@@ -80,14 +70,7 @@ function unify(e) {
 
 function startSwipe(e) {
   e.preventDefault();
-  console.log("move started", e);
-  let endType;
-
-  if (e.type === "mousedown") {
-    endType = "mouseup";
-  } else {
-    endType = "touchend";
-  }
+  let endType = e.type === "mousedown" ? "mouseup" : "touchend";
 
   document.addEventListener(endType, function detectSwipeDirection(f) {
     let swipeDirection = [
@@ -98,7 +81,6 @@ function startSwipe(e) {
     const denominator = Math.sqrt(
       swipeDirection[0] ** 2 + swipeDirection[1] ** 2
     );
-    console.log("denominator", denominator);
 
     if (denominator < 5 && endType === "touchend") {
       // if there's a slight movement by the user on a touch screen, treat it as a tap
@@ -168,11 +150,9 @@ function checkGameWon() {
 
 // Game play
 function makePlay(tileId, swipeDirection) {
-  console.log("swipe dir", swipeDirection);
   const tileLoc = getTileLoc(tileId);
   const nullLoc = getNullLoc();
   const tileRelativePos = findAdjacencyDirection(tileLoc, nullLoc);
-  console.log("tile relative pos", tileRelativePos);
   if (tileRelativePos) {
     if (
       swipeDirection.toString() === [0, 0].toString() ||
@@ -223,14 +203,8 @@ function moveTile(tileId, tileLoc, nullLoc) {
       key => cssRules[key].selectorText === `#${tileId}.moving`
     );
     if (styleRuleIndex) {
-      console.log(
-        `styleRule: ${
-          document.styleSheets[styleSheetIndex].cssRules[styleRuleIndex]
-        }`
-      );
       document.styleSheets[styleSheetIndex].deleteRule(styleRuleIndex);
     }
-    console.log(`styleRuleIndex: ${styleRuleIndex}`);
 
     tileEl.classList.remove("moving");
     drawGame();
@@ -276,7 +250,7 @@ function drawGame() {
 }
 
 function getTileLoc(tileId) {
-  return tileState["tileLoc"][tileId];
+  return getTileLocs()[tileId];
 }
 
 function getTileLocs() {
@@ -351,10 +325,6 @@ function testValidMoves() {
 
 // Start the game once everything's loaded.
 window.onload = function() {
-  document.addEventListener("touchmove", function(e) {
-    console.log("dragged");
-    console.log(e.target);
-  });
   gameSetup();
   //testValidMoves()
 };
