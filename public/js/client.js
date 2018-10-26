@@ -1,3 +1,10 @@
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(function() {
+    console.log("Service Worker Registered");
+  });
+}
+
 // Variables holding global game state
 // tileState holds the game state at any point in time
 const tileState = {
@@ -70,7 +77,8 @@ function unify(e) {
 
 function startSwipe(e) {
   e.preventDefault();
-  let endType = e.type === "mousedown" ? "mouseup" : "touchend";
+
+  const endType = e.type === "mousedown" ? "mouseup" : "touchend";
 
   document.addEventListener(endType, function detectSwipeDirection(f) {
     let swipeDirection = [
@@ -325,6 +333,8 @@ function testValidMoves() {
 
 // Start the game once everything's loaded.
 window.onload = function() {
+  // account for browser chrome on mobile by setting the height of the document to the window 
+  document.body.style.height = `${window.innerHeight}px`;
   gameSetup();
   //testValidMoves()
 };

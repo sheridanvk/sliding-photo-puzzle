@@ -7,10 +7,15 @@
   "description": "A simple Node app built on Express, instantly up and running.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js && workbox injectManifest workbox-config.js",
+    "test": "mocha"
   },
   "dependencies": {
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "workbox-cli": "^3.6.2"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
   },
   "engines": {
     "node": "8.x"

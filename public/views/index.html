@@ -18,13 +18,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- import the webpage's stylesheet -->
-    <link rel="stylesheet" href="/reset.css">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- import the webpage's client-side javascript file -->
-    <script src="/client.js" defer></script>
-    <script src="https://unpkg.com/prettier@1.13.0/standalone.js"></script>
-    <script src="https://unpkg.com/prettier@1.13.0/parser-babylon.js"></script>
+    <script src="js/client.js" defer></script>
+    
+    <!-- Add to home screen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="cadetblue">
+    <meta name="apple-mobile-web-app-title" content="Photo Puzzle">
+    <link rel="apple-touch-icon" href="images/icons/icon-152x152.png">
+    
+    <!-- Tile Icon for Windows -->
+    <meta name="msapplication-TileImage" content="https://cdn.glitch.com/b1283791-ff27-4ee5-b9cb-906713391a97%2Fphoto-puzzle-logo-144.png?1537214490271">
+    <meta name="msapplication-TileColor" content="cadetblue">
   </head>
   <body>
     
@@ -34,15 +42,12 @@
       <div id="game-area">
         <!-- game gets loaded in here in client.js -->
       </div>
+    </div>
+    <footer>
       <button id="randomize-button" style="display: none;" onclick="randomizeBoard()">
         Randomize!
       </button>
-    </div>
-
-    <!-- include the Glitch button to show what the webpage is about and
-          to make it easier for folks to view source and remix -->
-    <div class="glitchButton" style="display: none;"></div>
-    <script src="https://button.glitch.me/button.js"></script>
+    </footer>
 
   </body>
 </html>
