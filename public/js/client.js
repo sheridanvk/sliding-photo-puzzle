@@ -77,7 +77,6 @@ function unify(e) {
 
 function startSwipe(e) {
   e.preventDefault();
-  console.log("move started", e);
 
   const endType = e.type === "mousedown" ? "mouseup" : "touchend";
 
@@ -90,7 +89,6 @@ function startSwipe(e) {
     const denominator = Math.sqrt(
       swipeDirection[0] ** 2 + swipeDirection[1] ** 2
     );
-    console.log("denominator", denominator);
 
     if (denominator < 5 && endType === "touchend") {
       // if there's a slight movement by the user on a touch screen, treat it as a tap
@@ -160,11 +158,9 @@ function checkGameWon() {
 
 // Game play
 function makePlay(tileId, swipeDirection) {
-  console.log("swipe dir", swipeDirection);
   const tileLoc = getTileLoc(tileId);
   const nullLoc = getNullLoc();
   const tileRelativePos = findAdjacencyDirection(tileLoc, nullLoc);
-  console.log("tile relative pos", tileRelativePos);
   if (tileRelativePos) {
     if (
       swipeDirection.toString() === [0, 0].toString() ||
@@ -215,14 +211,8 @@ function moveTile(tileId, tileLoc, nullLoc) {
       key => cssRules[key].selectorText === `#${tileId}.moving`
     );
     if (styleRuleIndex) {
-      console.log(
-        `styleRule: ${
-          document.styleSheets[styleSheetIndex].cssRules[styleRuleIndex]
-        }`
-      );
       document.styleSheets[styleSheetIndex].deleteRule(styleRuleIndex);
     }
-    console.log(`styleRuleIndex: ${styleRuleIndex}`);
 
     tileEl.classList.remove("moving");
     drawGame();
@@ -268,7 +258,7 @@ function drawGame() {
 }
 
 function getTileLoc(tileId) {
-  return tileState["tileLoc"][tileId];
+  return getTileLocs()[tileId];
 }
 
 function getTileLocs() {

@@ -9,11 +9,11 @@ if (workbox) {
   workbox.precaching.precacheAndRoute([
   {
     "url": "manifest.json",
-    "revision": "a85d418f49a4f90722537bf19d2eefaf"
+    "revision": "ff77168e6f46a27026a6d696215209e5"
   },
   {
     "url": "js/client.js",
-    "revision": "fd49c65d7b5e4865da96dd821144cf11"
+    "revision": "1aeea4072475d0c4cca3b42c9ca3a269"
   },
   {
     "url": "css/style.css",
@@ -21,7 +21,7 @@ if (workbox) {
   },
   {
     "url": "views/index.html",
-    "revision": "5a6143085a196fcc969f56b31429a2f0"
+    "revision": "43230405875b81648cadc6246c350f69"
   }
 ]);
   
