@@ -78,13 +78,8 @@ function unify(e) {
 function startSwipe(e) {
   e.preventDefault();
   console.log("move started", e);
-  let endType;
 
-  if (e.type === "mousedown") {
-    endType = "mouseup";
-  } else {
-    endType = "touchend";
-  }
+  const endType = e.type === "mousedown" ? "mouseup" : "touchend";
 
   document.addEventListener(endType, function detectSwipeDirection(f) {
     let swipeDirection = [
