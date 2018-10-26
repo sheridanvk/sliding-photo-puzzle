@@ -1,3 +1,10 @@
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(function() {
+    console.log("Service Worker Registered");
+  });
+}
+
 // Variables holding global game state
 // tileState holds the game state at any point in time
 const tileState = {
@@ -70,7 +77,14 @@ function unify(e) {
 
 function startSwipe(e) {
   e.preventDefault();
-  let endType = e.type === "mousedown" ? "mouseup" : "touchend";
+  console.log("move started", e);
+  let endType;
+
+  if (e.type === "mousedown") {
+    endType = "mouseup";
+  } else {
+    endType = "touchend";
+  }
 
   document.addEventListener(endType, function detectSwipeDirection(f) {
     let swipeDirection = [
@@ -81,6 +95,7 @@ function startSwipe(e) {
     const denominator = Math.sqrt(
       swipeDirection[0] ** 2 + swipeDirection[1] ** 2
     );
+    console.log("denominator", denominator);
 
     if (denominator < 5 && endType === "touchend") {
       // if there's a slight movement by the user on a touch screen, treat it as a tap
@@ -150,9 +165,11 @@ function checkGameWon() {
 
 // Game play
 function makePlay(tileId, swipeDirection) {
+  console.log("swipe dir", swipeDirection);
   const tileLoc = getTileLoc(tileId);
   const nullLoc = getNullLoc();
   const tileRelativePos = findAdjacencyDirection(tileLoc, nullLoc);
+  console.log("tile relative pos", tileRelativePos);
   if (tileRelativePos) {
     if (
       swipeDirection.toString() === [0, 0].toString() ||
@@ -203,8 +220,14 @@ function moveTile(tileId, tileLoc, nullLoc) {
       key => cssRules[key].selectorText === `#${tileId}.moving`
     );
     if (styleRuleIndex) {
+      console.log(
+        `styleRule: ${
+          document.styleSheets[styleSheetIndex].cssRules[styleRuleIndex]
+        }`
+      );
       document.styleSheets[styleSheetIndex].deleteRule(styleRuleIndex);
     }
+    console.log(`styleRuleIndex: ${styleRuleIndex}`);
 
     tileEl.classList.remove("moving");
     drawGame();
@@ -250,7 +273,7 @@ function drawGame() {
 }
 
 function getTileLoc(tileId) {
-  return getTileLocs()[tileId];
+  return tileState["tileLoc"][tileId];
 }
 
 function getTileLocs() {
@@ -325,6 +348,8 @@ function testValidMoves() {
 
 // Start the game once everything's loaded.
 window.onload = function() {
+  // account for browser chrome on mobile by setting the height of the document to the window 
+  document.body.style.height = `${window.innerHeight}px`;
   gameSetup();
   //testValidMoves()
 };
