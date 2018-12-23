@@ -1,10 +1,3 @@
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").then(function() {
-    console.log("Service Worker Registered");
-  });
-}
-
 // Variables holding global game state
 // tileState holds the game state at any point in time
 const tileState = {
@@ -23,6 +16,7 @@ const gameWonState = {
 function gameSetup() {
   const gameArea = document.getElementById("game-area");
   const img = new Image();
+  // 🔨 Change the following URL to customise with your own picture
   img.src =
     "https://cdn.glitch.com/24dc13be-ff08-4007-bf38-7c45e0b5d9e1%2FIMG_20180826_104348.jpg?1537812587772";
 
